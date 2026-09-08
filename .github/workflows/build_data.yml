@@ -1,0 +1,33 @@
+name: Generate Weebdle Database
+
+on:
+  workflow_dispatch: # Allows you to click a button on GitHub to trigger it
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Harvest Data
+        run: python build_catalog.py
+
+      - name: Commit and push characters.json
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add characters.json
+          git commit -m "Auto-generated characters.json" || exit 0
+          git push
