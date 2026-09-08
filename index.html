@@ -3,17 +3,17 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Weebdle - Anime Character Wordle</title>
+  <title>Weebdle</title>
   <style>
     :root {
       --color-correct: #538d4e;
       --color-absent: #3a3a3c;
-      --color-higher-lower: #b59f3b;
+      --color-direction: #b59f3b;
       --color-border: #3a3a3c;
       --color-bg: #121213;
       --color-text: #ffffff;
     }
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Helvetica Neue', Arial, sans-serif; }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
     body {
       background-color: var(--color-bg);
       color: var(--color-text);
@@ -24,30 +24,28 @@
     }
     header {
       width: 100%;
-      max-width: 900px;
       border-bottom: 1px solid var(--color-border);
       text-align: center;
-      padding: 12px 0;
-      font-weight: 700;
+      padding: 14px 0;
       font-size: 24px;
+      font-weight: 800;
       letter-spacing: 3px;
-      text-transform: uppercase;
     }
     #game-container {
       width: 100%;
       max-width: 950px;
-      padding: 16px;
+      padding: 20px 12px;
       display: flex;
       flex-direction: column;
       align-items: center;
     }
-    .search-section {
-      width: 100%;
-      max-width: 450px;
+    .input-box-wrapper {
       position: relative;
+      width: 100%;
+      max-width: 480px;
       margin-bottom: 24px;
     }
-    input#guess-input {
+    #search-box {
       width: 100%;
       padding: 12px 16px;
       background: #272729;
@@ -57,95 +55,95 @@
       border-radius: 4px;
       outline: none;
     }
-    .suggestions {
+    .autocomplete-list {
       position: absolute;
       top: 48px;
       left: 0;
       right: 0;
       background: #272729;
       border: 1px solid var(--color-border);
-      max-height: 200px;
+      max-height: 220px;
       overflow-y: auto;
-      z-index: 10;
+      z-index: 100;
       border-radius: 0 0 4px 4px;
     }
-    .suggestion-item {
-      padding: 10px;
+    .autocomplete-item {
+      padding: 10px 14px;
       cursor: pointer;
+      border-bottom: 1px solid #333;
       display: flex;
       align-items: center;
       gap: 10px;
-      border-bottom: 1px solid #333;
+      font-size: 14px;
     }
-    .suggestion-item:hover { background: #3a3a3c; }
-    .suggestion-item img { width: 30px; height: 42px; object-fit: cover; border-radius: 2px; }
-    
-    /* Board Styling */
-    .grid-header, .guess-row {
+    .autocomplete-item:hover { background: #3a3a3c; }
+    .autocomplete-item img { width: 32px; height: 44px; object-fit: cover; border-radius: 2px; }
+
+    .row-layout {
       display: grid;
-      grid-template-columns: 60px 1.2fr 1.2fr 70px 70px 90px 90px 90px;
+      grid-template-columns: 60px 1.3fr 1.3fr 75px 75px 95px 95px 95px;
       gap: 6px;
       width: 100%;
       margin-bottom: 6px;
     }
     .grid-header div {
       font-size: 11px;
-      font-weight: bold;
+      font-weight: 700;
       color: #818384;
       text-align: center;
       text-transform: uppercase;
       padding-bottom: 4px;
     }
     .cell {
-      height: 65px;
+      height: 64px;
       background: #18181b;
       border: 1px solid var(--color-border);
       display: flex;
       align-items: center;
       justify-content: center;
       text-align: center;
-      font-size: 13px;
+      font-size: 12px;
       font-weight: 600;
       padding: 4px;
       perspective: 1000px;
-      transform-style: preserve-3d;
+      overflow: hidden;
+      word-break: break-word;
     }
-    .cell img { width: 100%; height: 100%; object-fit: cover; border-radius: 2px; }
+    .cell img { width: 100%; height: 100%; object-fit: cover; }
     
-    /* Flip Animation */
     .cell.flipped {
-      animation: flip 0.6s ease forwards;
+      animation: flip-cell 0.5s ease forwards;
     }
-    @keyframes flip {
+    @keyframes flip-cell {
       0% { transform: rotateX(0); }
       50% { transform: rotateX(90deg); }
       100% { transform: rotateX(0); }
     }
     .cell.correct { background-color: var(--color-correct) !important; border: none; }
     .cell.absent { background-color: var(--color-absent) !important; border: none; }
-    .cell.higher::after { content: ' ↑'; font-weight: bold; }
-    .cell.lower::after { content: ' ↓'; font-weight: bold; }
-    .cell.higher, .cell.lower { background-color: var(--color-higher-lower) !important; border: none; }
+    .cell.up::after { content: ' ↑'; font-weight: bold; }
+    .cell.down::after { content: ' ↓'; font-weight: bold; }
+    .cell.up, .cell.down { background-color: var(--color-direction) !important; border: none; }
 
-    #banner {
-      margin-top: 15px;
-      font-weight: 700;
+    #status-banner {
+      margin-top: 18px;
       font-size: 18px;
+      font-weight: 700;
       text-align: center;
     }
   </style>
 </head>
 <body>
 
-<header>Anidle</header>
+<header>WEEBDLE</header>
 
 <div id="game-container">
-  <div class="search-section">
-    <input type="text" id="guess-input" placeholder="Guess a character..." autocomplete="off" />
-    <div class="suggestions" id="suggestions" style="display: none;"></div>
+  <div class="input-box-wrapper">
+    <input type="text" id="search-box" placeholder="Guess a character..." autocomplete="off" />
+    <div id="autocomplete" class="autocomplete-list" style="display: none;"></div>
   </div>
 
-  <div class="grid-header">
+  <div class="row-layout grid-header">
     <div></div>
     <div>Character</div>
     <div>Anime</div>
@@ -156,148 +154,128 @@
     <div>Theme</div>
   </div>
 
-  <div id="board"></div>
-  <div id="banner"></div>
+  <div id="board" style="width: 100%;"></div>
+  <div id="status-banner"></div>
 </div>
 
 <script>
-  // Fallback / mock dataset for direct preview
-  let characters = [
-    {
-      character: "Lelouch Lamperouge",
-      image: "https://cdn.myanimelist.net/images/characters/8/406163.jpg",
-      anime: "Code Geass",
-      year: 2006,
-      gender: "Male",
-      genre: "Action",
-      demographic: "None",
-      theme: "Mecha"
-    },
-    {
-      character: "Spike Spiegel",
-      image: "https://cdn.myanimelist.net/images/characters/4/50197.jpg",
-      anime: "Cowboy Bebop",
-      year: 1998,
-      gender: "Male",
-      genre: "Action",
-      demographic: "None",
-      theme: "Space"
-    },
-    {
-      character: "Frieren",
-      image: "https://cdn.myanimelist.net/images/characters/5/523456.jpg",
-      anime: "Sousou no Frieren",
-      year: 2023,
-      gender: "Female",
-      genre: "Adventure",
-      demographic: "Shounen",
-      theme: "None"
-    }
-  ];
-
+  let characters = [];
   let target = null;
   let attempts = 0;
   const maxAttempts = 6;
-  let gameOver = false;
+  let isGameOver = false;
 
-  // Load external dataset generated by fetch_data.py if present
+  const searchBox = document.getElementById("search-box");
+  const autocomplete = document.getElementById("autocomplete");
+  const board = document.getElementById("board");
+  const statusBanner = document.getElementById("status-banner");
+
   fetch('characters.json')
     .then(res => res.json())
-    .then(data => { characters = data; initGame(); })
-    .catch(() => { initGame(); });
+    .then(data => {
+      characters = data;
+      // Daily seed based on UTC date
+      const now = new Date();
+      const seed = now.getUTCFullYear() * 10000 + (now.getUTCMonth() + 1) * 100 + now.getUTCDate();
+      target = characters[seed % characters.length];
+    })
+    .catch(() => {
+      statusBanner.textContent = "Unable to load characters.json database.";
+    });
 
-  function initGame() {
-    target = characters[Math.floor(Math.random() * characters.length)];
-  }
+  searchBox.addEventListener("input", () => {
+    const val = searchBox.value.trim().toLowerCase();
+    autocomplete.innerHTML = "";
+    if (val.length < 2) {
+      autocomplete.style.display = "none";
+      return;
+    }
 
-  const input = document.getElementById("guess-input");
-  const suggestions = document.getElementById("suggestions");
-  const board = document.getElementById("board");
-  const banner = document.getElementById("banner");
-
-  input.addEventListener("input", () => {
-    const val = input.value.trim().toLowerCase();
-    suggestions.innerHTML = "";
-    if (!val) { suggestions.style.display = "none"; return; }
-
-    const matches = characters.filter(c => c.character.toLowerCase().includes(val)).slice(0, 5);
-    if (matches.length === 0) { suggestions.style.display = "none"; return; }
+    const matches = characters.filter(c => c.name.toLowerCase().includes(val)).slice(0, 8);
+    if (!matches.length) {
+      autocomplete.style.display = "none";
+      return;
+    }
 
     matches.forEach(c => {
-      const item = document.createElement("div");
-      item.className = "suggestion-item";
-      item.innerHTML = `<img src="${c.image}" alt=""><span>${c.character} (${c.anime})</span>`;
-      item.onclick = () => submitGuess(c);
-      suggestions.appendChild(item);
+      const row = document.createElement("div");
+      row.className = "autocomplete-item";
+      row.innerHTML = `<img src="${c.image}"><span>${c.name} (${c.anime})</span>`;
+      row.onclick = () => {
+        searchBox.value = "";
+        autocomplete.style.display = "none";
+        executeGuess(c);
+      };
+      autocomplete.appendChild(row);
     });
-    suggestions.style.display = "block";
+    autocomplete.style.display = "block";
   });
 
-  function submitGuess(guess) {
-    if (gameOver) return;
-    input.value = "";
-    suggestions.style.display = "none";
+  function executeGuess(guess) {
+    if (isGameOver || !target) return;
     attempts++;
+    renderRow(guess);
 
-    renderGuessRow(guess);
+    const charMatch = guess.name.toLowerCase() === target.name.toLowerCase();
+    const animeMatch = guess.anime.toLowerCase() === target.anime.toLowerCase();
 
-    const isCharMatch = guess.character.toLowerCase() === target.character.toLowerCase();
-    const isAnimeMatch = guess.anime.toLowerCase() === target.anime.toLowerCase();
-
-    if (isCharMatch) {
-      gameOver = true;
-      banner.style.color = "var(--color-correct)";
-      banner.textContent = `Magnificent! You identified ${target.character}!`;
-      input.disabled = true;
-    } else if (isAnimeMatch && attempts <= maxAttempts) {
-      banner.style.color = "var(--color-higher-lower)";
-      banner.textContent = `Correct series (${target.anime})! Keep going for the character!`;
+    if (charMatch) {
+      isGameOver = true;
+      statusBanner.style.color = "var(--color-correct)";
+      statusBanner.textContent = `Victory! You identified ${target.name}!`;
+      searchBox.disabled = true;
+    } else if (animeMatch && attempts <= maxAttempts) {
+      statusBanner.style.color = "var(--color-direction)";
+      statusBanner.textContent = `Correct series (${target.anime})! Keep guessing the character!`;
     } else if (attempts >= maxAttempts) {
-      gameOver = true;
-      banner.style.color = "#e74c3c";
-      banner.textContent = `Game Over! The character was ${target.character} from ${target.anime}.`;
-      input.disabled = true;
+      isGameOver = true;
+      statusBanner.style.color = "#e74c3c";
+      statusBanner.textContent = `Game Over! The character was ${target.name} (${target.anime}).`;
+      searchBox.disabled = true;
     }
   }
 
-  function renderGuessRow(guess) {
+  function renderRow(guess) {
     const row = document.createElement("div");
-    row.className = "guess-row";
+    row.className = "row-layout";
 
-    const fields = [
-      { key: "image", val: guess.image, type: "img" },
-      { key: "character", val: guess.character, correct: guess.character === target.character },
-      { key: "anime", val: guess.anime, correct: guess.anime === target.anime },
-      { key: "year", val: guess.year, type: "numeric" },
-      { key: "gender", val: guess.gender, correct: guess.gender === target.gender },
-      { key: "genre", val: guess.genre, correct: guess.genre === target.genre },
-      { key: "demographic", val: guess.demographic, correct: guess.demographic === target.demographic },
-      { key: "theme", val: guess.theme, correct: guess.theme === target.theme }
+    const columns = [
+      { type: "img", val: guess.image },
+      { type: "str", val: guess.name, isMatch: guess.name === target.name },
+      { type: "str", val: guess.anime, isMatch: guess.anime === target.anime },
+      { type: "num", val: guess.year, target: target.year },
+      { type: "str", val: guess.gender, isMatch: guess.gender === target.gender },
+      { type: "str", val: guess.genre, isMatch: guess.genre === target.genre },
+      { type: "str", val: guess.demographic, isMatch: guess.demographic === target.demographic },
+      { type: "str", val: guess.theme, isMatch: guess.theme === target.theme }
     ];
 
-    fields.forEach((field, idx) => {
+    columns.forEach((col, idx) => {
       const cell = document.createElement("div");
       cell.className = "cell";
 
-      if (field.type === "img") {
-        cell.innerHTML = `<img src="${field.val}" alt="">`;
+      if (col.type === "img") {
+        cell.innerHTML = `<img src="${col.val}" alt="">`;
       } else {
-        cell.textContent = field.val;
+        cell.textContent = col.val;
       }
 
       row.appendChild(cell);
 
-      // Staggered NYT-style flip
       setTimeout(() => {
         cell.classList.add("flipped");
-        if (field.type === "numeric") {
-          if (guess.year === target.year) cell.classList.add("correct");
-          else if (guess.year < target.year) cell.classList.add("higher");
-          else cell.classList.add("lower");
-        } else if (field.type !== "img") {
-          cell.classList.add(field.correct ? "correct" : "absent");
+        if (col.type === "str") {
+          cell.classList.add(col.isMatch ? "correct" : "absent");
+        } else if (col.type === "num") {
+          const gYear = parseInt(col.val, 10);
+          const tYear = parseInt(col.target, 10);
+          if (isNaN(gYear) || isNaN(tYear) || gYear === tYear) {
+            cell.classList.add(gYear === tYear ? "correct" : "absent");
+          } else {
+            cell.classList.add(gYear < tYear ? "up" : "down");
+          }
         }
-      }, idx * 250);
+      }, idx * 200);
     });
 
     board.appendChild(row);
